@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ScanGuide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F8FAFC;font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;font-size:15px;color:#0F172A}
+button{border:none;background:none;cursor:pointer;font-family:inherit}
+input{font-family:inherit;border:none;outline:none}
+.hdr{background:#fff;border-bottom:1px solid #E8EDF3;padding:16px 16px 12px;position:sticky;top:0;z-index:100}
+.hdr-title{font-size:22px;font-weight:800;letter-spacing:-0.03em}
+.hdr-sub{font-size:12px;color:#94A3B8;margin-top:2px}
+.hdr-back{display:flex;align-items:center;gap:10px}
+.back-btn{color:#0055CC;display:flex;align-items:center;padding:4px;flex-shrink:0}
+.hdr-cat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.hdr-info{flex:1;min-width:0}
+.hdr-cat-label{font-size:11px;color:#94A3B8;font-weight:600}
+.hdr-item-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-wrap{padding:12px 16px 8px;position:relative}
+.search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);color:#94A3B8;pointer-events:none;display:flex}
+.search-input{width:100%;background:#fff;border:1px solid #E8EDF3;border-radius:10px;padding:11px 14px 11px 38px;font-size:15px;color:#0F172A}
+.tabs{display:flex;gap:6px;padding:4px 16px 10px;overflow-x:auto}
+.tab{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid #E8EDF3;background:#fff;color:#64748B}
+.list{padding:4px 16px 32px}
+.sec-hdr{display:flex;align-items:center;gap:8px;padding:14px 0 8px}
+.sec-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.sec-label{font-size:13px;font-weight:700;color:#475569}
+.card{display:flex;align-items:stretch;background:#fff;border-radius:12px;border:1px solid #E8EDF3;margin-bottom:8px;cursor:pointer;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card:active{opacity:.65}
+.card-bar{width:4px;flex-shrink:0}
+.card-body{flex:1;padding:14px 12px 14px 14px}
+.card-title{font-size:15px;font-weight:600;line-height:1.4}
+.card-sub{font-size:12px;color:#94A3B8;margin-top:3px}
+.card-right{display:flex;align-items:center;gap:6px;padding-right:14px;flex-shrink:0}
+.badge{font-size:10px;font-weight:700;background:#FEE2E2;color:#DC2626;padding:2px 6px;border-radius:4px}
+.empty{text-align:center;padding:60px 0;color:#CBD5E1}
+.detail-body{padding:18px 16px 40px}
+.detail-new{display:inline-block;font-size:10px;font-weight:700;background:#FEE2E2;color:#DC2626;padding:2px 8px;border-radius:4px;margin-bottom:12px}
+.detail-title{font-size:19px;font-weight:800;line-height:1.4;padding-bottom:16px;border-bottom:1px solid #E8EDF3;margin-bottom:18px}
+.sec-section{margin-bottom:22px}
+.sec-section-title{font-size:11px;font-weight:700;color:#94A3B8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.step-row{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#0055CC;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:1px}
+.step-text{font-size:15px;line-height:1.7;padding-top:3px}
+.info-card{display:flex;gap:10px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;margin-bottom:14px;align-items:flex-start}
+.info-text{font-size:14px;line-height:1.75;color:#1E3A5F}
+.warn-card{display:flex;gap:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:14px;align-items:flex-start}
+.warn-text{font-size:14px;line-height:1.75;color:#78350F}
+</style></head><body>
+<div id="app"></div>
+<script>
+const C={scan:{l:'眠りSCAN本体',c:'#0055CC'},sub:{l:'SubViewer/モバイル',c:'#007A50'},nc:{l:'NC・介護記録',c:'#A35200'},eye:{l:'眠りSCAN eye',c:'#6D28D9'}};
+const O=['scan','sub','nc','eye'];
+const I={
+  search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+  right:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  info:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  warn:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  scan:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>',
+  sub:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  nc:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  eye:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+};
+const D=[
+  {id:'s1',cat:'scan',n:false,t:'通信エラー（1枚〜数枚）',s:[{type:'steps',title:'対処手順',items:['電波強度を確認する','眠りSCAN本体の電源が抜けていないか確認','Wi-Fiランプが点灯しているか確認（点滅→消灯を繰り返す場合はWi-Fi未接続）','別の居室・エリアへ移動していないか確認','Viewer上の登録情報とエラーSCANのシリアル・IPアドレスに違いがないか確認','IPアドレスの重複がないか確認（電源OFFにしてpingを送信し、応答があれば重複）']},{type:'info',text:'通信エラーが多く、Wi-Fiランプが不規則点滅もしない場合はアクセスポイントの設定や相性に起因している可能性があります。サポートチームへご相談ください。'}]},
+  {id:'s2',cat:'scan',n:false,t:'通信エラー（1ユニット〜複数ユニット）',s:[{type:'steps',title:'対処手順',items:['眠りSCAN Viewer・管理PCを再起動する','正常なエリアと比較し、アクセスポイントのランプ状態に差異がないか確認','PoEに正常に配線されているか確認','PoEが正常動作しているか確認']}]},
+  {id:'s3',cat:'scan',n:false,t:'通信エラー（全台）',s:[{type:'steps',title:'対処手順',items:['PCを再起動する（シャットダウン後の電源ONではなく「再起動」を選択）','管理PCのLANケーブルが抜けていないか、IPアドレスが正しいか確認','管理PCのWi-Fiが切断・無効になっていないか確認','PoEに正常に配線されているか・正常動作しているか確認']}]},
+  {id:'s4',cat:'scan',n:false,t:'切断と接続を1分間隔で繰り返す',s:[{type:'info',text:'静電気などにより、眠りSCAN本体と管理PC上のデータ間に不整合が生じることで発生します。'},{type:'steps',title:'対処手順',items:['【推奨】最新の眠りSCAN Viewer（1610以上）へアップデートする','当該眠りSCANを管理PCと接続する','「測定状態の維持」を有効にしている場合は無効にする','測定停止状態にする（サイドの青ボタン→眠りSCANマーク→もう一度青ボタン）','USBケーブルで接続→測定データ一覧を確認→全データにチェック→すべて消去する']},{type:'warn',text:'エラーが出たり数分表示が変わらない場合は、USBケーブルを接続し直してもう一度確認してください。'}]},
+  {id:'s5',cat:'scan',n:false,t:'お知らせのポップアップが出ない（管理PC）',s:[{type:'steps',title:'対処手順',items:['眠りSCAN Viewer → ツール → お知らせ検出時のポップアップ表示 を開く','「ポップアップの表示を行わない」になっていないか確認する']}]},
+  {id:'s6',cat:'scan',n:false,t:'お知らせが出ない（発報しない）',s:[{type:'steps',title:'対処手順',items:['お知らせ設定や時間設定が正しいか確認する','他の部屋のSCANで正しくお知らせが出るか確認する','発生日時の記録があれば、ログと突き合わせて確認する','当該SCANおよびユーザの設定を一時的に変更して、お知らせが出るか確認する']}]},
+  {id:'s7',cat:'scan',n:false,t:'発報はするが通知音が鳴らない',s:[{type:'steps',title:'対処手順',items:['PCの音の設定を確認する','他のアプリ（YouTubeなど）で音が鳴るか確認する','改善しない場合：眠りSCAN Viewerを再インストール（アンインストール→PC再起動→インストール→再起動）']},{type:'warn',text:'アンインストールするとリアルタイムモニタの情報・SubViewer等の外部通信設定・他社連携がリセットされます。事前に設定を控え、バックアップ（ProgramData→PARAMOUNT BED→NN-C110をデスクトップにコピー）を取っておいてください。'}]},
+  {id:'s8',cat:'scan',n:false,t:'睡眠日誌が見られない',s:[{type:'steps',title:'確認手順',items:['「ツール」→「リアルタイムモニターの設定」→「設定情報・測定データ保存フォルダを開く」をクリック','「Log」フォルダを開き、異常なサイズのログデータがないか確認（5GB超で発生しやすい）']},{type:'steps',title:'対処手順',items:['眠りSCAN Viewerを閉じる','Cドライブ→ProgramData→PARAMOUNT BED→NN-C110 を開く','「NemuriScanData.db」を「original-NemuriScanData.db」などに名称変更する','眠りSCAN Viewerを再起動する','数時間以上経過してから日誌の状況を確認する']},{type:'warn',text:'3週間より前の記録は見られなくなります。'}]},
+  {id:'s9',cat:'scan',n:false,t:'心拍日誌が見られない（旧型SCAN限定）',s:[{type:'info',text:'Viewerが1310より前のバージョン、または本体ファームウェアが1.1.7より前の場合、180日間通電したまま経過すると心拍日誌が記録されなくなります。'},{type:'steps',title:'対処手順',items:['眠りSCAN本体の電源を切る→10秒経過後に再接続する','眠りSCAN Viewerを最新バージョンに入れ替える','インストール後：ツール→リアルタイムモニタの設定→測定状態の維持→「有効にする」を設定']}]},
+  {id:'s10',cat:'scan',n:false,t:'在床しているのに離床表示になる',s:[{type:'info',text:'以下の場合は正しく動作しないことがあります：\n・20cmを超えるマットレス使用\n・マットレスを複数枚使用\n・利用者様の寝位置がベッドの下方\n・眠りSCANが適切な位置に設置されていない\n・寝たきりなど体動が著しく少ない方\n・無呼吸症候群の方'}]},
+  {id:'s11',cat:'scan',n:false,t:'離床しているのに在床表示になる',s:[{type:'info',text:'以下の場合は正しく動作しないことがあります：\n・エアコンの風がベッドに直接当たっている\n・防火扉のような重い扉が付近にあり頻繁に出入りがある\n・台風など強風が吹いている'}]},
+  {id:'s12',cat:'scan',n:true,t:'リアルタイムモニタに黄色の「!」が付いている',s:[{type:'info',text:'なんらかのハード的なエラーが発生しています。'},{type:'steps',title:'エラー内容の確認方法',items:['眠りSCAN Viewerのメイン画面上のシリアル番号をクリックする','表示された値を確認し、エラー内容と照らし合わせる（圧力センサー故障が多い）']}]},
+  {id:'s13',cat:'scan',n:false,t:'眠りSCAN Viewerが起動しない/モニタ画面が出ない',s:[{type:'info',text:'・「構成システムを初期化できませんでした」とエラーが出て起動しない\n・画面1(2)表示をクリックしてもリアルタイムモニター画面が出てこない'},{type:'steps',title:'対処手順',items:['AppData配下のuser(.config)ファイルを削除する','場所：Cドライブ→ユーザー→ログインユーザ名→AppData→Local→PARAMOUNT BED→眠りSCAN Viewer～→数字のフォルダ']},{type:'warn',text:'このファイルを削除するとリアルタイムモニターの設定値がリセットされます。再設定が必要：モニタ画面の表示・外部通信（サブやモバイルの有効/10002）・外部出力（NC連携のフォルダ設定）'}]},
+  {id:'s14',cat:'scan',n:true,t:'眠りSCAN Viewerが正常に起動しない（エラー画面が出る）',s:[{type:'info',text:'起動時またはLAN通信開始を押下後に例外エラーが出る。新規インストール時またはアップデート時に発生します。'},{type:'steps',title:'新規インストール時',items:['インストーラ内の「vc_redist64.exe」をインストールする']},{type:'steps',title:'アップデート時',items:['bitを変えて再インストールする（32bitなら64bit、64bitなら32bitを再インストール）']}]},
+  {id:'s15',cat:'scan',n:false,t:'管理PCを変更したい',s:[{type:'steps',title:'旧管理PCでの操作',items:['IPアドレスを確認する','Cドライブ→ProgramData→PARAMOUNT BED配下の「NN-C110」をUSBメモリにコピーする']},{type:'steps',title:'新管理PCでの操作',items:['眠りSCAN Viewerをインストールする','IPアドレスの固定設定を行う','FW10002登録・耐スリープなど管理PCとしての各種設定を行う','旧管理PCのデータを貼り付ける']}]},
+  {id:'s16',cat:'scan',n:true,t:'登録した眠りSCANが消えてしまった',s:[{type:'info',text:'MACアドレスが認識されない状態で書き込まれた時に頻発します。'},{type:'steps',title:'対処手順',items:['MACアドレスを認識した状態で書き込みを実施する（設定画面のMACアドレス欄に表示されていればOK）','書き込む際はパスワードも忘れずに入力する']}]},
+  {id:'s17',cat:'scan',n:true,t:'【NN-1320】「眠りSCAN登録」に表示されない',s:[{type:'info',text:'眠りSCAN Viewerのバージョンが古いことが原因です。\n・NN-1520：Viewer 1500以降が必須\n・NN-1320：Viewer 1632以降が必須'},{type:'steps',title:'対処手順',items:['眠りSCAN Viewerを1632以降にバージョンアップする']}]},
+  {id:'s18',cat:'scan',n:true,t:'【NN-1320】通信エラーから復旧しない',s:[{type:'info',text:'NN-1320限定で、Wi-Fi部品の受信感度が著しく悪い個体が多く出ています。詳細は調査中。'},{type:'steps',title:'確認方法',items:['APの真下などに移動させて疎通するか確認','正常なSCANと同じ場所に置き、Viewer上の電波強度を比較する（2〜30程度差があれば感度不良）']},{type:'warn',text:'現時点での対処方法はありません。不良交換を行ってください。交換品も不良の可能性があるため、数を多めに用意し、事前に正常動作するか確認することをお勧めします。'}]},
+  {id:'b1',cat:'sub',n:false,t:'SubViewer・モバイルが通信エラー（全台）',s:[{type:'steps',title:'対処手順',items:['管理PCのIPアドレスが以前と変わっていないか確認','眠りSCAN Viewerが管理者権限で起動しているか確認','管理PCのファイアウォールに10002が登録されているか確認','眠りSCAN Viewerでモニター情報の外部通信が「有効/10002」になっているか確認','管理PC→サブ、サブ→管理PCからそれぞれpingが飛ぶか確認','サブPC・モバイル端末がネットワークに接続されているか確認','サブPC・モバイル端末のIPアドレスが適切に設定されているか確認','セキュリティソフトが入っていないか確認','眠りSCAN Viewerの1600以降へのアップデートをしていないか確認']}]},
+  {id:'b2',cat:'sub',n:false,t:'SubViewer・モバイルが通信エラー（一部の端末のみ）',s:[{type:'steps',title:'対処手順',items:['通信可能な端末と比較して設定に違いがないか確認する','接続先IPアドレスの設定を確認する','ネットワーク接続状態（Wi-Fi・LAN）を確認する']}]},
+  {id:'b3',cat:'sub',n:false,t:'SubViewerが起動しない（再インストールしても）',s:[{type:'steps',title:'対処手順',items:['user(.config)ファイルを削除する','場所：Cドライブ→ユーザー→ログインユーザ名→AppData→Local→PARAMOUNT BED→眠りSCAN_SubViewer～→数字のフォルダ']},{type:'warn',text:'SubViewerのショートカットアイコンは新しく作り直す必要があります。旧バージョンのアイコンでは起動しません。'}]},
+  {id:'b4',cat:'sub',n:false,t:'SubViewerで通知音が鳴らない',s:[{type:'steps',title:'対処手順',items:['お知らせ設定よりテスト音が鳴るか確認する','鳴らなければSubViewerを再インストール（アンインストール→PC再起動→再インストール→PC再起動）']},{type:'warn',text:'再インストール後、SubViewerのショートカットアイコンは新しく作り直す必要があります。'}]},
+  {id:'b5',cat:'sub',n:false,t:'【モバイル】日誌選択ダイアログが出ない',s:[{type:'steps',title:'対処手順',items:['本体の再起動を行う','モバイルアプリを削除→再インストールする','測定者が登録されているか確認する']}]},
+  {id:'b6',cat:'sub',n:true,t:'【iOS】IPアドレス入力後に文字が見えない',s:[{type:'info',text:'iOSの外観モードが「ダーク」になっているため、入力文字が見えない状態になっています。'},{type:'steps',title:'対処手順',items:['設定→画面表示と明るさ→外観モードを「ライト」に変更する','眠りSCANアプリを最新版にアップデートする']}]},
+  {id:'b7',cat:'sub',n:true,t:'【Android】選択範囲外の通知が鳴る',s:[{type:'info',text:'アプリのプログラムに一部不具合のある記述が存在します。'},{type:'steps',title:'対処手順',items:['表示が「全体」になっていないか確認する','2021年11月中旬以降のバージョンにアップデートする（最新バージョン：1300）']}]},
+  {id:'n1',cat:'nc',n:false,t:'NC連携しなくなった',s:[{type:'steps',title:'対処手順',items:['眠りSCAN Viewerの再インストールをしていないか確認（アンインストールで外部出力設定がリセットされます）','「ツール」→「モニター情報の外部出力」をクリック','現在の出力先が空白になっていることを確認','「はい」→PC→Windows(c)→「nemuriscan」フォルダを選択→「OK」を2回クリック','眠りSCAN Viewerを再起動して設定を反映する']}]},
+  {id:'n2',cat:'nc',n:true,t:'NC連携しなくなった（ケアコム）',s:[{type:'steps',title:'対処手順',items:['ツール→リアルタイムモニターの設定→モニター情報の外部出力の状態を確認','Cドライブ→「nemuriscan」に共有設定がされているか確認','「nemuriscan」フォルダにXMLファイルが2つ出力されているか確認','ネットワークプロファイルが「プライベート」になっているか確認','「パブリック」の場合：「接続プロパティの変更」から「プライベート」に変更する']},{type:'warn',text:'「接続プロパティの変更」がない場合、PowerShellによるコマンド操作が必要になります。IBSまでご連絡ください。'}]},
+  {id:'n3',cat:'nc',n:false,t:'SCANの通知と違う居室のNCが鳴る（Vi-nurse）',s:[{type:'steps',title:'対処手順',items:['眠りSCANを別の部屋に移動させていないか確認する','管理PCのデスクトップにあるピンク色の「眠りSCAN監視 設定反映」アイコンをダブルクリックして「設定反映」を行う']},{type:'info',text:'Viewerの設定を変更した際は、連携ソフトウェアの設定反映も合わせて行うようご案内ください。'}]},
+  {id:'n4',cat:'nc',n:false,t:'介護記録ソフトが連携しなくなった（ケアカルテ・ちょうじゅ）',s:[{type:'steps',title:'確認・対処手順',items:['「ツール」→「リアルタイムモニターの設定」→「睡眠日誌情報の外部出力」をクリック','①「有効」にチェックが入っているか確認','②出力フォルダが「C:\\NEMSCAN_KIROKU」になっているか確認','③出力間隔が「3時間に1回」になっているか確認','④ファイル形式が「XML」になっているか確認']}]},
+  {id:'e1',cat:'eye',n:true,t:'カメラのIPアドレスが登録できない・消えてしまう',s:[{type:'info',text:'PC〜カメラ間の通信状況によって発生するようです。CSVからの取り込みでも手動でも発生します。'},{type:'steps',title:'対処手順',items:['当該カメラの電源をOFFにして登録する','またはPCをネットワークから遮断（LAN抜く・Wi-Fi切断）して登録する']}]},
+  {id:'e2',cat:'eye',n:true,t:'カメラがeyeアプリ上でオフラインになる',s:[{type:'info',text:'接続状態OK・ping応答OK・ブラウザアクセスOKなのに、eyeアプリ上でオフラインとなり画像が表示されない。'},{type:'steps',title:'対処手順',items:['カメラの設定画面→システム→プレイン設定→HTTPS→「enabled」にチェックを入れる','カメラの電源がONの状態でカメラ登録を削除し、再度登録してみる','カメラの電源がOFFの状態でカメラ登録を削除し、再度登録してみる','カメラを初期化し、再度設定してみる']}]},
+];
+
+let S={cat:'all',q:'',det:null};
+
+function sHTML(sec){
+  if(sec.type==='steps'){
+    let h='<div class="sec-section"><div class="sec-section-title">'+sec.title+'</div>';
+    sec.items.forEach((it,i)=>h+='<div class="step-row"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+it+'</div></div>');
+    return h+'</div>';
+  }
+  if(sec.type==='info') return '<div class="info-card">'+I.info+'<div class="info-text">'+sec.text.replace(/\n/g,'<br>')+'</div></div>';
+  if(sec.type==='warn') return '<div class="warn-card">'+I.warn+'<div class="warn-text">'+sec.text.replace(/\n/g,'<br>')+'</div></div>';
+  return '';
+}
+
+function cHTML(d,sub){
+  const cc=C[d.cat];
+  return '<div class="card" data-id="'+d.id+'"><div class="card-bar" style="background:'+cc.c+'"></div><div class="card-body"><div class="card-title">'+d.t+'</div>'+(sub?'<div class="card-sub">'+cc.l+'</div>':'')+'</div><div class="card-right">'+(d.n?'<span class="badge">NEW</span>':'')+I.right+'</div></div>';
+}
+
+function go(){
+  const app=document.getElementById('app');
+  if(S.det){
+    const d=S.det,cc=C[d.cat];
+    app.innerHTML='<div class="hdr"><div class="hdr-back"><button class="back-btn" id="bb">'+I.back+'</button><div class="hdr-cat-icon" style="background:'+cc.c+'">'+I[d.cat]+'</div><div class="hdr-info"><div class="hdr-cat-label">'+cc.l+'</div><div class="hdr-item-title">'+d.t+'</div></div></div></div><div class="detail-body">'+(d.n?'<div class="detail-new">NEW</div>':'')+'<div class="detail-title">'+d.t+'</div>'+d.s.map(sHTML).join('')+'</div>';
+    document.getElementById('bb').onclick=()=>{S.det=null;go();window.scrollTo(0,0);};
+    return;
+  }
+  const kw=S.q.toLowerCase().trim();
+  let items=kw?D.filter(d=>d.t.toLowerCase().includes(kw)||d.s.some(s=>(s.items&&s.items.some(t=>t.toLowerCase().includes(kw)))||(s.text&&s.text.toLowerCase().includes(kw)))):S.cat==='all'?D:D.filter(d=>d.cat===S.cat);
+  const aA=S.cat==='all';
+  const tabs=O.map(k=>{const a=S.cat===k,cc=C[k],sh={scan:'本体',sub:'SubViewer',nc:'NC連携',eye:'eye'}[k];return '<button class="tab'+(a?' active':'')+'" data-cat="'+k+'" style="'+(a?'background:'+cc.c+';border-color:'+cc.c+';color:#fff':'')+'">'+I[k]+sh+'</button>';}).join('');
+  let lh='';
+  if(!items.length)lh='<div class="empty">該当する症状が見つかりませんでした</div>';
+  else if(kw)lh=items.map(d=>cHTML(d,true)).join('');
+  else O.forEach(c=>{const g=items.filter(d=>d.cat===c);if(!g.length)return;const cc=C[c];if(aA)lh+='<div class="sec-hdr"><div class="sec-icon" style="background:'+cc.c+'">'+I[c]+'</div><div class="sec-label">'+cc.l+'</div></div>';lh+=g.map(d=>cHTML(d,false)).join('');});
+  app.innerHTML='<div class="hdr"><div class="hdr-title">ScanGuide</div><div class="hdr-sub">眠りSCAN</div></div><div class="search-wrap"><span class="search-icon">'+I.search+'</span><input class="search-input" id="si" type="text" placeholder="症状を検索..." value="'+S.q.replace(/"/g,'&quot;')+'"></div>'+(!S.q?'<div class="tabs"><button class="tab'+(aA?' active':'')+'" data-cat="all" style="'+(aA?'background:#0055CC;border-color:#0055CC;color:#fff':'')+'">すべて</button>'+tabs+'</div>':'')+'<div class="list">'+lh+'</div>';
+  document.getElementById('si').addEventListener('input',e=>{S.q=e.target.value;S.cat='all';go();});
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{S.cat=b.dataset.cat;S.q='';go();});
+  document.querySelectorAll('[data-id]').forEach(c=>c.onclick=()=>{S.det=D.find(d=>d.id===c.dataset.id);go();window.scrollTo(0,0);});
+}
+go();
+</script></body></html>
